@@ -17,6 +17,10 @@ interface CompletionDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(completion: Completion)
 
+    // Lets the reminder worker check one habit without loading every completion
+    @Query("SELECT EXISTS(SELECT 1 FROM completions WHERE habitId = :habitId AND date = :date)")
+    suspend fun isCompleted(habitId: Long, date: LocalDate): Boolean
+
     // Used to un-tick today's checkbox
     @Query("DELETE FROM completions WHERE habitId = :habitId AND date = :date")
     suspend fun delete(habitId: Long, date: LocalDate)

@@ -1,6 +1,10 @@
 package com.example.habitstreak.ui
 
+import android.Manifest
 import android.text.format.DateFormat
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.habitstreak.data.canPostNotifications
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -51,6 +56,27 @@ fun HabitEditorScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     // Whether the dialog is open is throwaway UI state, so it stays here; rememberSaveable survives rotation
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    // Saving happens after the permission answer either way: a habit is useful even without reminders
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (!granted) {
+            Toast.makeText(
+                context,
+                "Reminders won't show until you allow notifications in Settings",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        viewModel.onSave()
+    }
+    // Asked here, at the moment reminders matter, instead of a cold prompt on first launch
+    val onSaveClick = {
+        if (canPostNotifications(context)) {
+            viewModel.onSave()
+        } else {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     // Runs once when isFinished turns true; navigating directly in the click handler could fire twice
     LaunchedEffect(state.isFinished) {
@@ -89,7 +115,7 @@ fun HabitEditorScreen(
                     Text("Reminder time: ${state.reminderTime.format(reminderFormat)}")
                 }
                 Button(
-                    onClick = viewModel::onSave,
+                    onClick = onSaveClick,
                     enabled = state.canSave,
                     modifier = Modifier.fillMaxWidth()
                 ) {
