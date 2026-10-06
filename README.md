@@ -2,6 +2,10 @@
 
 A small native Android app for building daily habits. Add a habit, tick it off each day, watch the streak grow, and get a reminder notification at a time you choose. The home screen also shows a motivational quote of the day.
 
+## Download
+
+[**Download the debug APK**](https://drive.google.com/file/d/1YuFfoZGejmgrWUCqMV3gOWV1nW0hqpFt/view?usp=sharing) (Android 8.0 or newer). Open the file on your phone and allow "Install unknown apps" if Android asks. To build it yourself, see [Build an APK](#build-an-apk).
+
 ## Screenshots
 
 | Home | New habit | Reminder time | Reminder notification |
