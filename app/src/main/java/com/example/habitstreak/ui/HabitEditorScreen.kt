@@ -38,7 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.habitstreak.data.canPostNotifications
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -51,7 +51,7 @@ private val reminderFormat = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT
 fun HabitEditorScreen(
     onFinished: () -> Unit,
     onBack: () -> Unit,
-    viewModel: HabitEditorViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: HabitEditorViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     // Whether the dialog is open is throwaway UI state, so it stays here; rememberSaveable survives rotation

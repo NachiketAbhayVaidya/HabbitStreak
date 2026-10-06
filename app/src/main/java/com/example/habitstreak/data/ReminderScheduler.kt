@@ -1,6 +1,5 @@
 package com.example.habitstreak.data
 
-import android.content.Context
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -8,9 +7,11 @@ import androidx.work.workDataOf
 import com.example.habitstreak.domain.delayUntilNext
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ReminderScheduler(context: Context) {
-    private val workManager = WorkManager.getInstance(context)
+@Singleton
+class ReminderScheduler @Inject constructor(private val workManager: WorkManager) {
 
     // One uniquely named job per habit, repeating every 24h. The initial delay makes the first
     // run land on the chosen time, and the daily repeat keeps it at that time.

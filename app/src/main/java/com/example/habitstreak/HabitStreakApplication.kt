@@ -1,42 +1,26 @@
 package com.example.habitstreak
 
 import android.app.Application
-import androidx.room.Room
-import com.example.habitstreak.data.HabitRepository
-import com.example.habitstreak.data.HabitStreakDatabase
-import com.example.habitstreak.data.MIGRATION_1_2
-import com.example.habitstreak.data.QuoteApi
-import com.example.habitstreak.data.QuoteRepository
-import com.example.habitstreak.data.ReminderScheduler
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.example.habitstreak.data.createReminderChannel
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
-// Created once per app process, so the whole app shares one database and one repository.
-// Phase 7 (Hilt) will replace this hand-written wiring.
-class HabitStreakApplication : Application() {
+// @HiltAndroidApp creates the dependency container that every injected class is built from
+@HiltAndroidApp
+class HabitStreakApplication : Application(), Configuration.Provider {
+
+    // WorkManager normally creates workers itself and can't pass them constructor arguments.
+    // Hilt's factory builds them instead, so ReminderWorker can receive its repository.
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
+
     override fun onCreate() {
         super.onCreate()
         createReminderChannel(this)
     }
-
-    private val database by lazy {
-        Room.databaseBuilder(this, HabitStreakDatabase::class.java, "habitstreak.db")
-            .addMigrations(MIGRATION_1_2)
-            .build()
-    }
-
-    private val quoteApi by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://zenquotes.io/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(QuoteApi::class.java)
-    }
-
-    val repository by lazy {
-        HabitRepository(database.habitDao(), database.completionDao(), ReminderScheduler(this))
-    }
-
-    val quoteRepository by lazy { QuoteRepository(database.quoteDao(), quoteApi) }
 }

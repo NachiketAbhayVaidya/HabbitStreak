@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.habitstreak.data.Habit
 import com.example.habitstreak.data.Quote
 import java.time.format.DateTimeFormatter
@@ -46,7 +46,7 @@ private val reminderFormat = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT
 fun HabitListScreen(
     onAddHabit: () -> Unit,
     onEditHabit: (Long) -> Unit,
-    viewModel: HabitListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: HabitListViewModel = hiltViewModel()
 ) {
     // Lifecycle-aware: stops collecting while the app is in the background
     val state by viewModel.state.collectAsStateWithLifecycle()

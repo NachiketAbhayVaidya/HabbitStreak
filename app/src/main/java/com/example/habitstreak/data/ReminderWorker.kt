@@ -6,11 +6,13 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.habitstreak.HabitStreakApplication
 import com.example.habitstreak.MainActivity
 import com.example.habitstreak.R
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import java.time.LocalDate
 
 private const val TAG = "ReminderWorker"
@@ -18,11 +20,16 @@ const val KEY_HABIT_ID = "habitId"
 
 // Runs in the background at the reminder time. WorkManager (not a plain alarm) keeps the schedule
 // across reboots and app restarts. Android may delay it a few minutes to save battery.
-class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+// @HiltWorker + @AssistedInject: Hilt supplies the repository, WorkManager supplies the two @Assisted ones
+@HiltWorker
+class ReminderWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted params: WorkerParameters,
+    private val repository: HabitRepository
+) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         val habitId = inputData.getLong(KEY_HABIT_ID, -1L)
-        val repository = (applicationContext as HabitStreakApplication).repository
 
         val habit = repository.getHabit(habitId)
         if (habit == null) {

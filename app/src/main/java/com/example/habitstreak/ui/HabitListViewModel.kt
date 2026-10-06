@@ -16,7 +16,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
+import javax.inject.Inject
 
 // One row on the home screen
 data class HabitItem(val habit: Habit, val streak: Int, val doneToday: Boolean)
@@ -28,7 +30,8 @@ sealed interface HabitListState {
     data class Success(val habits: List<HabitItem>) : HabitListState
 }
 
-class HabitListViewModel(
+@HiltViewModel
+class HabitListViewModel @Inject constructor(
     private val repository: HabitRepository,
     private val quoteRepository: QuoteRepository
 ) : ViewModel() {

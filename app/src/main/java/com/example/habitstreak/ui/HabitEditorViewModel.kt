@@ -5,12 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habitstreak.data.Habit
 import com.example.habitstreak.data.HabitRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalTime
+import javax.inject.Inject
 
 private val DEFAULT_REMINDER_TIME = LocalTime.of(9, 0)
 
@@ -23,7 +25,8 @@ data class EditorUiState(
     val canSave = name.isNotBlank()
 }
 
-class HabitEditorViewModel(
+@HiltViewModel
+class HabitEditorViewModel @Inject constructor(
     private val repository: HabitRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {

@@ -5,11 +5,14 @@ import kotlinx.coroutines.flow.Flow
 import retrofit2.HttpException
 import java.io.IOException
 import java.time.LocalDate
+import javax.inject.Inject
+import javax.inject.Singleton
 
 // What zenquotes.io puts in the author field when it answers "too many requests" with HTTP 200
 private const val RATE_LIMIT_AUTHOR = "zenquotes.io"
 
-class QuoteRepository(
+@Singleton
+class QuoteRepository @Inject constructor(
     private val quoteDao: QuoteDao,
     private val quoteApi: QuoteApi
 ) {

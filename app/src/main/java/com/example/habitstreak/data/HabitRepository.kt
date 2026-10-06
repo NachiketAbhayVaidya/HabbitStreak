@@ -4,9 +4,12 @@ import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import javax.inject.Inject
+import javax.inject.Singleton
 
 // The only class the ViewModels talk to; they never see the DAOs or Room
-class HabitRepository(
+@Singleton
+class HabitRepository @Inject constructor(
     private val habitDao: HabitDao,
     private val completionDao: CompletionDao,
     private val reminderScheduler: ReminderScheduler
