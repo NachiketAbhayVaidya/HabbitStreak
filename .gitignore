@@ -14,3 +14,6 @@
 .cxx
 local.properties
 .kotlin/
+
+# IDE settings are personal to each developer
+/.idea/
