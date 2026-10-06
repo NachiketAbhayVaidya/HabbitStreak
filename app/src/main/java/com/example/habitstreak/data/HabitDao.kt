@@ -13,6 +13,9 @@ interface HabitDao {
     @Query("SELECT * FROM habits ORDER BY createdAt")
     fun observeAll(): Flow<List<Habit>>
 
+    @Query("SELECT * FROM habits WHERE id = :id")
+    suspend fun getById(id: Long): Habit?
+
     @Insert
     suspend fun insert(habit: Habit): Long
 
