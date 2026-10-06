@@ -6,15 +6,14 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.lifecycle.createSavedStateHandle
 import com.example.habitstreak.HabitStreakApplication
-import com.example.habitstreak.data.HabitRepository
 
 // ViewModels with constructor parameters need a factory telling Android how to build them
 object AppViewModelProvider {
     val Factory = viewModelFactory {
-        initializer { HabitListViewModel(repository()) }
-        initializer { HabitEditorViewModel(repository(), createSavedStateHandle()) }
+        initializer { HabitListViewModel(application().repository, application().quoteRepository) }
+        initializer { HabitEditorViewModel(application().repository, createSavedStateHandle()) }
     }
 }
 
-private fun CreationExtras.repository(): HabitRepository =
-    (this[APPLICATION_KEY] as HabitStreakApplication).repository
+private fun CreationExtras.application(): HabitStreakApplication =
+    this[APPLICATION_KEY] as HabitStreakApplication

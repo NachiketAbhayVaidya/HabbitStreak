@@ -29,11 +29,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.habitstreak.data.Habit
+import com.example.habitstreak.data.Quote
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -49,6 +51,8 @@ fun HabitListScreen(
     // Lifecycle-aware: stops collecting while the app is in the background
     val state by viewModel.state.collectAsStateWithLifecycle()
     val habitToDelete by viewModel.habitToDelete.collectAsStateWithLifecycle()
+    val quote by viewModel.quote.collectAsStateWithLifecycle()
+    val quoteRefreshFailed by viewModel.quoteRefreshFailed.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("HabitStreak") }) },
@@ -60,21 +64,24 @@ fun HabitListScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            when (val current = state) {
-                HabitListState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                HabitListState.Error -> CenteredMessage("Something went wrong loading your habits.")
-                is HabitListState.Success ->
-                    if (current.habits.isEmpty()) {
-                        CenteredMessage("No habits yet. Tap \"Add habit\" to start your first streak.")
-                    } else {
-                        HabitList(
-                            items = current.habits,
-                            onDoneToggled = viewModel::onDoneToggled,
-                            onEdit = onEditHabit,
-                            onDelete = viewModel::onDeleteRequested
-                        )
-                    }
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            QuoteOfTheDay(quote = quote, refreshFailed = quoteRefreshFailed)
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                when (val current = state) {
+                    HabitListState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    HabitListState.Error -> CenteredMessage("Something went wrong loading your habits.")
+                    is HabitListState.Success ->
+                        if (current.habits.isEmpty()) {
+                            CenteredMessage("No habits yet. Tap \"Add habit\" to start your first streak.")
+                        } else {
+                            HabitList(
+                                items = current.habits,
+                                onDoneToggled = viewModel::onDoneToggled,
+                                onEdit = onEditHabit,
+                                onDelete = viewModel::onDeleteRequested
+                            )
+                        }
+                }
             }
         }
     }
@@ -86,6 +93,22 @@ fun HabitListScreen(
             onDismiss = viewModel::onDeleteDismissed
         )
     }
+}
+
+// A cached quote always wins, so a failed refresh only matters when there is nothing to show
+@Composable
+private fun QuoteOfTheDay(quote: Quote?, refreshFailed: Boolean) {
+    val message = when {
+        quote != null -> "“${quote.text}” — ${quote.author}"
+        refreshFailed -> "Today's quote isn't available. Check your connection."
+        else -> return // still loading: show nothing instead of a flash of placeholder
+    }
+    Text(
+        text = message,
+        style = MaterialTheme.typography.bodyMedium,
+        fontStyle = FontStyle.Italic,
+        modifier = Modifier.fillMaxWidth().padding(16.dp)
+    )
 }
 
 @Composable

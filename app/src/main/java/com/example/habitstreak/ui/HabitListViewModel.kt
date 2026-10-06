@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habitstreak.data.Habit
 import com.example.habitstreak.data.HabitRepository
+import com.example.habitstreak.data.Quote
+import com.example.habitstreak.data.QuoteRepository
 import com.example.habitstreak.domain.calculateStreak
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,7 +28,10 @@ sealed interface HabitListState {
     data class Success(val habits: List<HabitItem>) : HabitListState
 }
 
-class HabitListViewModel(private val repository: HabitRepository) : ViewModel() {
+class HabitListViewModel(
+    private val repository: HabitRepository,
+    private val quoteRepository: QuoteRepository
+) : ViewModel() {
     // combine re-runs whenever habits OR completions change, so ticking a box updates the streak at once
     val state: StateFlow<HabitListState> = combine(repository.habits, repository.completions) { habits, completions ->
         val today = LocalDate.now()
@@ -40,6 +45,18 @@ class HabitListViewModel(private val repository: HabitRepository) : ViewModel() 
         .catch { emit(HabitListState.Error) }
         // WhileSubscribed(5000) keeps the data flowing through a rotation but stops 5s after the UI is gone
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HabitListState.Loading)
+
+    // The screen shows whatever is cached, so it also appears offline; null until one exists
+    val quote: StateFlow<Quote?> = quoteRepository.quote
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    // True when the refresh failed; the screen only shows it if there is no cached quote to fall back on
+    private val _quoteRefreshFailed = MutableStateFlow(false)
+    val quoteRefreshFailed: StateFlow<Boolean> = _quoteRefreshFailed.asStateFlow()
+
+    init {
+        viewModelScope.launch { _quoteRefreshFailed.value = !quoteRepository.refreshIfStale() }
+    }
 
     // The habit awaiting delete confirmation; null means no dialog is showing
     private val _habitToDelete = MutableStateFlow<Habit?>(null)
